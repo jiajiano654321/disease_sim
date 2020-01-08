@@ -1,0 +1,84 @@
+<%
+DIRECTIVE SAFE_OUTPUT_OPEN;
+var headContent = {
+include("/pages/template/head.html"){}
+%>
+
+<script type="text/javascript">
+    var oper;
+    jQuery(function($) {
+        // 页面方法
+        oper = {
+            form : document.form1,
+            list : function() {
+                var url = 'admin/home';
+                this.form.action = url;
+                this.form.submit();
+            }
+        };
+        //显示Menu索引
+        showMenu('page_home');
+    });
+
+</script>
+
+<%
+};
+%>
+
+<%
+var bodyContent = {
+%>
+<!-- 菜单 -->
+<% include("/pages/template/menu.html"){} %>
+<br/><br/>
+<center><h2>如需获取帮助可以联系(454979901@qq.com)，演示系统登录密码123456</h2></center>
+<div class="panel panel-default">
+    <div class="panel-body">
+        <ol class="breadcrumb">
+            <li class="active">2018年4月18日</li>
+        </ol>
+        - 细节调整<br/>
+        任务调度合并到system模块，修复登录404的问题、beetl模板升级到2.7.14<br/>
+        - 次要调整<br/>
+        seo优化，basePath端口是80的时候不显示；
+    </div>
+</div>
+<div class="panel panel-default">
+    <div class="panel-body">
+        <ol class="breadcrumb">
+            <li class="active">2018年2月7日</li>
+        </ol>
+        - 主要更新<br/>
+        由于linux下使用javaassist的反射方法获取方法的参数名时，获取的参数名与实际参数名不一致。<br/>
+        本次更新使用spring 方式替代了javaassist，感兴趣的小伙伴可以查阅源码修改的两处源码分别是：<br/>
+        QuartzJobClassSvc 106至142行<br/>
+        GetParamUtil 102至150行<br/>
+        - 次要更新<br/>
+        1、修复未登录情况时，直接前往某个路由报错问题，UserInterceptor.java移动到系统基础部分；
+    </div>
+</div>
+<div class="panel panel-default">
+    <div class="panel-body">
+        <ol class="breadcrumb">
+            <li class="active">2017年</li>
+        </ol>
+        - 主要更新<br/>
+        1.菜单栏xss漏洞修复<br/>
+        2.废弃dubbo注解的方式集成spring，提供spring集成开关配置默认关闭<br/>
+        3.角色授权bug修复<br/>
+        4.合并任务调度https://gitee.com/supyuan/QuickJob<br/>
+        5.新增 XSS 脚本处理功能，示例 : ${nameHtml,xss}<br/>
+        6.修复个别情况下，当前页数大于总页数时，分页的 bug<br/>
+        7.权限控制精准到功能按钮<br/>
+        8.全新登录界面<br/>
+        9.全新404、500页面
+    </div>
+</div>
+<center><h2>演示系统只开放部分模块的新增权限，权限控制细颗粒（按钮级）！！！</h2></center>
+<center><h2>最新源码地址:<a href="https://gitee.com/supyuan/jfinal-admin/tree/develop/" target="_blank">develop(一般延迟三日左右)</a></h2></center>
+<%}; %>
+
+<% layout("/pages/template/_layout.html",{head:headContent,body:bodyContent}){ %>
+DIRECTIVE SAFE_OUTPUT_CLOSE;
+<%} %>
