@@ -1,0 +1,359 @@
+<% DIRECTIVE SAFE_OUTPUT_OPEN; var headContent = {
+include("/pages/template/head.html"){} %>
+<script type="text/javascript"
+	src="http://api.map.baidu.com/api?v=2.0&ak=drZlxFThE03OdteHkawSRXrshv1Yxl5G"></script>
+<script type="text/javascript"
+	src="static/component/echarts/dist/echarts.min.js"></script>
+<script src="static/component/echarts/dist/extension/bmap.js"></script>
+<script type="text/javascript">
+	jQuery(function($) {
+		$('#submit').click(
+				function() {
+					if (!validForm()) {
+						return false;
+					}
+					var params = $("#form1").serializeArray();
+					var values = {};
+					for (x in params) {
+						values[params[x].name] = params[x].value;
+					}
+					var idata = JSON.stringify(values);
+					var url = "sim/result/getSpaceNums";
+					$.ajax({
+						type : "POST",
+						url : url,
+						data : idata,
+						contentType : "application/json",
+						success : function(data) {
+							cuts = data.cuts;
+							var pieces = [];
+							for (i = 0; i <= cuts.length; i++) {
+								var ele;
+								if (i == 0) {
+									ele = {
+										min : 0,
+										max : cuts[i]
+									};
+								} else if (i == cuts.length) {
+									ele = {
+										min : cuts[i - 1]
+									};
+								} else {
+									ele = {
+										min : cuts[i - 1],
+										max : cuts[i]
+									};
+								}
+								pieces.push(ele);
+							}
+							option.visualMap.pieces = pieces;
+							var eles = data.elements;
+							var i = 0;
+							var refreshData = function() {
+								nums = eles[i];
+								option.series[0].data = nums;
+								myChart.setOption(option);
+								i++;
+								if (i == eles.length) {
+									clearInterval(inter);
+								}
+							}
+							var longitude = eles[0][0][0];
+							var latitude = eles[0][0][1];
+							option.bmap.center = [longitude,latitude];
+							var inter = setInterval(refreshData, 1000);
+							refreshData();
+							var bmap = myChart.getModel().getComponent('bmap')
+									.getBMap();
+							bmap.addControl(new BMap.MapTypeControl());
+						},
+						error : function(msg) {
+							alert("error");
+						}
+					});
+					$('#paramTable').css('display', 'none');
+					$('#main').css('visibility', 'visible');
+					$('#resultDiv').css('visibility', 'visible');
+				});
+		$('#recalc').click(function() {
+//			$('#form1')[0].reset();
+			$('#paramTable').css('display', 'inline');
+			$('#main').css('visibility', 'hidden');
+			$('#resultDiv').css('visibility', 'hidden');
+		});
+		showMenu('page_data');
+	});
+</script>
+
+<% }; var bodyContent = { %>
+<div id="loading"
+	style="position: absolute; display: none; text-align: center; width: 100%; height: 100%; z-index: 1; background-color: #8E8E8E; opacity: 0.5;">
+	<div class="loading"
+		style="margin: 0 auto; width: 400px; height: 500px;">加载中，请稍后</div>
+</div>
+<% include("/pages/template/menu.html"){} %>
+<form name="form1" action="" id="form1" method="post"
+	class="form-horizontal" role="form">
+	<input type="hidden" name="id" value="${id}" style="display: none;" />
+	<table class="table" id="paramTable">
+		<thead>
+			<tr>
+				<th width="150px;"></th>
+				<th width="200px;"></th>
+				<th width="150px;"></th>
+				<th width="200px;"></th>
+				<th width="150px;"></th>
+				<th width="200px;"></th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td>研究区出生人口:</td>
+				<td><input style="width: 150px;" class="form-control"
+					type="vnum_y" name="n" value="${model.n }" valid="vtext"
+					validname="名称" placeholder="请输入研究区出生人口" /></td>
+				<td width="150px;">感染期:</td>
+				<td><input style="width: 150px;" class="form-control"
+					type="vfloat_y" name="det" value="${model.det }"
+					placeholder="请输入感染期" /></td>
+				<td width="150px;">恢复期：</td>
+				<td><input style="width: 150px;" class="form-control"
+					type="vfloat_y" name="gam" value="${model.gam }"
+					placeholder="请输入恢复期" /></td>
+			</tr>
+			<tr>
+				<td>a:</td>
+				<td><input style="width: 150px;" class="form-control"
+					type="vfloat_y" name="a" value="${model.a }" placeholder="请输入a" /></td>
+				<td width="150px;">b：</td>
+				<td><input style="width: 150px;" class="form-control"
+					type="vfloat_y" name="b" value="${model.b }" placeholder="请输入b" /></td>
+				<td>fau:</td>
+				<td><input style="width: 150px;" class="form-control"
+					type="vfloat_y" name="fau" value="${model.fau }"
+					placeholder="请输入fau" /></td>
+			</tr>
+			<tr>
+				<td>b1：</td>
+				<td><input style="width: 150px;" class="form-control"
+					type="vfloat_y" name="b1" value="${model.b1 }" placeholder="请输入b1" /></td>
+				<td>fau1:</td>
+				<td><input style="width: 150px;" class="form-control"
+					type="vfloat_y" name="fau1" value="${model.fau1 }"
+					placeholder="请输入fau1" /></td>
+
+				<td>m1:</td>
+				<td><input style="width: 150px;" class="form-control"
+					type="vfloat_y" name="m1" value=""
+					placeholder="请输入m1" /></td>
+			</tr>
+			<tr>
+				<td>m2:</td>
+				<td><input style="width: 150px;" class="form-control"
+					type="vfloat_y" name="m2" value=""
+					placeholder="请输入m2" /></td>
+				<td>m3:</td>
+				<td><input style="width: 150px;" class="form-control"
+					type="vfloat_y" name="m3" value=""
+					placeholder="请输入m3" /></td>
+				<td>m4:</td>
+				<td><input style="width: 150px;" class="form-control"
+					type="vfloat_y" name="m4" value=""
+					placeholder="请输入m4" /></td>
+			</tr>
+			<tr>
+				<td>欧式距离:</td>
+				<td><input style="width: 150px;" class="form-control"
+					type="vfloat_y" name="k1" value=""
+					placeholder="请输入欧氏距离" /></td>
+				<td>网格个数:</td>
+				<td><input style="width: 150px;" class="form-control"
+					type="vnum" name="k2" value="" placeholder="请输入网格个数" /></td>
+			</tr>
+			<tr>
+				<td>时间段:</td>
+				<td><select name="year" style="width: 150px;"
+					class="form-control" valid="vselect_y" validname="年份">
+						<option value="-1">---请选择年份---</option> <% for(item in years) {%>
+						<option value=${item.year}>${item.year}</option> <% } %>
+				</select></td>
+				<td>数据集：</td>
+				<td><select name="collectionId" style="width: 150px;"
+					class="form-control" valid="vselect_y" validname="数据集">
+						<option value="-1">---请选择数据集---</option> <% for(item in
+						collections) {%>
+						<option value=${item.id}>${item.name}</option> <% } %>
+				</select></td>
+			</tr>
+		</tbody>
+	</table>
+</form>
+<div id="main" style="width: 100%; height: 80%; visibility: hidden;"></div>
+<div id="resultDiv" style="text-align: center; font-size: 18px;"></div>
+<script type="text/javascript">
+	var myChart = echarts.init(document.getElementById('main'));
+	var option = {
+		bmap : {
+			center : [ 112.972174, 28.14673 ],
+			zoom : 12,
+			roam : true,
+			mapStyle : {
+				styleJson : [ {
+					'featureType' : 'water',
+					'elementType' : 'all',
+					'stylers' : {
+						'color' : '#d1d1d1'
+					}
+				}, {
+					'featureType' : 'land',
+					'elementType' : 'all',
+					'stylers' : {
+						'color' : '#f3f3f3'
+					}
+				}, {
+					'featureType' : 'railway',
+					'elementType' : 'all',
+					'stylers' : {
+						'visibility' : 'off'
+					}
+				}, {
+					'featureType' : 'highway',
+					'elementType' : 'all',
+					'stylers' : {
+						'color' : '#fdfdfd'
+					}
+				}, {
+					'featureType' : 'highway',
+					'elementType' : 'labels',
+					'stylers' : {
+						'visibility' : 'off'
+					}
+				}, {
+					'featureType' : 'arterial',
+					'elementType' : 'geometry',
+					'stylers' : {
+						'color' : '#fefefe'
+					}
+				}, {
+					'featureType' : 'arterial',
+					'elementType' : 'geometry.fill',
+					'stylers' : {
+						'color' : '#fefefe'
+					}
+				}, {
+					'featureType' : 'poi',
+					'elementType' : 'all',
+					'stylers' : {
+						'visibility' : 'off'
+					}
+				}, {
+					'featureType' : 'green',
+					'elementType' : 'all',
+					'stylers' : {
+						'visibility' : 'off'
+					}
+				}, {
+					'featureType' : 'subway',
+					'elementType' : 'all',
+					'stylers' : {
+						'visibility' : 'off'
+					}
+				}, {
+					'featureType' : 'manmade',
+					'elementType' : 'all',
+					'stylers' : {
+						'color' : '#d1d1d1'
+					}
+				}, {
+					'featureType' : 'local',
+					'elementType' : 'all',
+					'stylers' : {
+						'color' : '#d1d1d1'
+					}
+				}, {
+					'featureType' : 'arterial',
+					'elementType' : 'labels',
+					'stylers' : {
+						'visibility' : 'off'
+					}
+				}, {
+					'featureType' : 'boundary',
+					'elementType' : 'all',
+					'stylers' : {
+						'color' : '#fefefe'
+					}
+				}, {
+					'featureType' : 'building',
+					'elementType' : 'all',
+					'stylers' : {
+						'color' : '#d1d1d1'
+					}
+				}, {
+					'featureType' : 'label',
+					'elementType' : 'labels.text.fill',
+					'stylers' : {
+						'color' : '#999999'
+					}
+				} ]
+			}
+		},
+		xAxis : {
+			type : 'category',
+			splitNumber : 10,
+			show : false
+
+		},
+		yAxis : {
+			type : 'category',
+			splitNumber : 10,
+			show : false
+		},
+		visualMap : {
+			type : 'piecewise',
+			color : [ '#800000', '#A52A2A', '#CD5C5C' ],
+			pieces : []
+		},
+		geo : {
+			map : 'china',
+			label : {
+				emphasis : {
+					show : false
+				}
+			},
+			roam : true,
+			itemStyle : {
+				normal : {
+					areaColor : '#323c48',
+					borderColor : '#111'
+				},
+				emphasis : {
+					areaColor : '#2a333d'
+				}
+			}
+		},
+		series : [ {
+			type : 'heatmap',
+			coordinateSystem : 'bmap',
+			data : [],
+		//   itemStyle: {
+		//      emphasis: {
+		//          shadowBlur: 10,
+		//          shadowColor: 'rgba(0, 0, 0, 0.5)'
+		//      }
+		// }
+		} ]
+	};
+</script>
+<div style="height: 50px; clear: both;">&nbsp;</div>
+<nav class="navbar navbar-default navbar-fixed-bottom">
+	<div class="container"
+		style="padding: 5px 0px 5px 0px; text-align: center;">
+		<button class="btn btn-primary" id="submit">提交</button>
+		<button class="btn btn-default" onclick="closeIframe();return false;">关
+			闭</button>
+		<button class="btn btn-default" id="recalc">重新计算</button>
+	</div>
+</nav>
+<%}; %> <%
+layout("/pages/template/_layout.html",{head:headContent,body:bodyContent}){
+%> <%} DIRECTIVE SAFE_OUTPUT_CLOSE; %>
