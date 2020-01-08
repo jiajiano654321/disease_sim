@@ -46,15 +46,6 @@ public class BaseConfig extends JflyfoxConfig {
 		groupTemplate.registerFunctionPackage("flyfox", BeeltFunctions.class);
 		groupTemplate.registerFormat("xss", new XSSDefenseFormat());
 
-		FileResourceLoader resourceLoader = new FileResourceLoader(this.getClass().getResource("/").toString(),
-				"utf-8");
-		Configuration cfg;
-		try {
-			cfg = Configuration.defaultConfiguration();
-			GroupTemplate gt = new GroupTemplate(resourceLoader, cfg);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 
 	}
 
@@ -103,10 +94,6 @@ public class BaseConfig extends JflyfoxConfig {
 //		factoryService.addJobList();
 
 		JFlyFoxCache.init();
-
-		GroupTemplate gt = BeetlFileUtils.getFileUtils().getGroupTemlate();
-		Template template = gt.getTemplate("template.btl");
-		System.out.println(template.render());
 
 		System.out.println("##################################");
 		System.out.println("############系统启动完成##########");

@@ -139,7 +139,6 @@ public class JflyfoxConfig extends JFinalConfig {
 		druidPlugin.setTestOnReturn(false);
 		druidPlugin.setMaxPoolPreparedStatementPerConnectionSize(20);
 		druidPlugin.setFilters("wall,stat");
-
 		me.add(druidPlugin);
 		// 配置ActiveRecord插件
 		ActiveRecordPlugin arp = new ActiveRecordPlugin(druidPlugin);

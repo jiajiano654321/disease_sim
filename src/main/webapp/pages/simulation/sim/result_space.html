@@ -1,94 +1,238 @@
 <% var headContent = { include("/pages/template/head.html"){} %>
 <script type="text/javascript"
-	src="static/component/echarts/echarts.min.js"></script>
+	src="http://api.map.baidu.com/api?v=2.0&ak=drZlxFThE03OdteHkawSRXrshv1Yxl5G"></script>
 <script type="text/javascript"
-	src="static/component/echarts/china.js"></script>
+	src="static/component/echarts/dist/echarts.min.js"></script>
+<script src="static/component/echarts/dist/extension/bmap.js"></script>
+
 <% }; var bodyContent = { %>
 <div id="main" style="width: 100%; height: 800px;"></div>
 <script type="text/javascript">
-var myChart = echarts.init(document.getElementById('main'));
-var option = {
-	xAxis : {
-		type:'category',
-		splitNumber:10,
-        show: false
-        
-	},
-	yAxis : {
-		type:'category',
-		splitNumber:10,
-		show: false
-	} ,
-    visualMap: {
-        type: 'piecewise',
-        pieces: [
-            {min: 5},
-            {min: 4, max: 5},
-            {min: 3, max: 4},
-            {min: 2, max: 3},
-            {min: 1, max: 2},
-            {max: 1}
-        ]
-    },
-    geo
-	series : [ {
-		type : 'heatmap',
-		data : [[0,0,5],[1,1,1],[1,2,5],[3,3,0],[4,4,2],[5,5,4],[6,6,0],[5,7,0],[9,8,3],[10,9,3],[0,10,1]],
- //   itemStyle: {
-  //      emphasis: {
-  //          shadowBlur: 10,
-  //          shadowColor: 'rgba(0, 0, 0, 0.5)'
-  //      }
-   // }
-	}]
-};
-var url = "sim/result/getSpaceNums";
-$.ajax({
-	type : "POST",
-	url : url,
-	dataType : "json",
-	success : function(data) {
-		cuts = data.cuts;
-		var pieces = [];
-		for(i = 0;i <= cuts.length;i++){
-			var ele;
-			if(i == 0){
-				ele = {min : 0,max : cuts[i]};
-			}else if( i == cuts.length){
-				ele = {min : cuts[i-1]};
-			}else {
-				ele = {min : cuts[i-1],max : cuts[i]};
+	var myChart = echarts.init(document.getElementById('main'));
+	var option = {
+		bmap : {
+			center : [ 112.972174,28.14673 ],
+			zoom : 12,
+			roam : true,
+            mapStyle: {
+                styleJson: [{
+                    'featureType': 'water',
+                    'elementType': 'all',
+                    'stylers': {
+                        'color': '#d1d1d1'
+                    }
+                }, {
+                    'featureType': 'land',
+                    'elementType': 'all',
+                    'stylers': {
+                        'color': '#f3f3f3'
+                    }
+                }, {
+                    'featureType': 'railway',
+                    'elementType': 'all',
+                    'stylers': {
+                        'visibility': 'off'
+                    }
+                }, {
+                    'featureType': 'highway',
+                    'elementType': 'all',
+                    'stylers': {
+                        'color': '#fdfdfd'
+                    }
+                }, {
+                    'featureType': 'highway',
+                    'elementType': 'labels',
+                    'stylers': {
+                        'visibility': 'off'
+                    }
+                }, {
+                    'featureType': 'arterial',
+                    'elementType': 'geometry',
+                    'stylers': {
+                        'color': '#fefefe'
+                    }
+                }, {
+                    'featureType': 'arterial',
+                    'elementType': 'geometry.fill',
+                    'stylers': {
+                        'color': '#fefefe'
+                    }
+                }, {
+                    'featureType': 'poi',
+                    'elementType': 'all',
+                    'stylers': {
+                        'visibility': 'off'
+                    }
+                }, {
+                    'featureType': 'green',
+                    'elementType': 'all',
+                    'stylers': {
+                        'visibility': 'off'
+                    }
+                }, {
+                    'featureType': 'subway',
+                    'elementType': 'all',
+                    'stylers': {
+                        'visibility': 'off'
+                    }
+                }, {
+                    'featureType': 'manmade',
+                    'elementType': 'all',
+                    'stylers': {
+                        'color': '#d1d1d1'
+                    }
+                }, {
+                    'featureType': 'local',
+                    'elementType': 'all',
+                    'stylers': {
+                        'color': '#d1d1d1'
+                    }
+                }, {
+                    'featureType': 'arterial',
+                    'elementType': 'labels',
+                    'stylers': {
+                        'visibility': 'off'
+                    }
+                }, {
+                    'featureType': 'boundary',
+                    'elementType': 'all',
+                    'stylers': {
+                        'color': '#fefefe'
+                    }
+                }, {
+                    'featureType': 'building',
+                    'elementType': 'all',
+                    'stylers': {
+                        'color': '#d1d1d1'
+                    }
+                }, {
+                    'featureType': 'label',
+                    'elementType': 'labels.text.fill',
+                    'stylers': {
+                        'color': '#999999'
+                    }
+                }]
+            }
+		},
+		xAxis : {
+			type : 'category',
+			splitNumber : 10,
+			show : false
+
+		},
+		yAxis : {
+			type : 'category',
+			splitNumber : 10,
+			show : false
+		},
+		visualMap : {
+			type : 'piecewise',
+			color : ['#800000','#A52A2A','#CD5C5C'],
+			pieces : [ {
+				min : 5
+			}, {
+				min : 4,
+				max : 5
+			}, {
+				min : 3,
+				max : 4
+			}, {
+				min : 2,
+				max : 3
+			}, {
+				min : 1,
+				max : 2
+			}, {
+				max : 1
+			} ]
+		},
+		geo : {
+			map : 'china',
+			label : {
+				emphasis : {
+					show : false
+				}
+			},
+			roam : true,
+			itemStyle : {
+				normal : {
+					areaColor : '#323c48',
+					borderColor : '#111'
+				},
+				emphasis : {
+					areaColor : '#2a333d'
+				}
 			}
-			pieces.push(ele);
-		}
-		option.visualMap.pieces = pieces;
-		var eles = data.elements;
-		var _setTimeout=setTimeout;
-		/*
-		window.setTimeout=function(callback,time,params){
-		   var param=Array.prototype.slice.call(arguments,2);
-		   var _callback=function(){
-		     callback.apply(null,param);
-		   }
-		   _setTimeout(_callback,time);
-		}*/
-		var i = 0;
-		var refreshData = function(){
+		},
+		series : [ {
+			type : 'heatmap',
+			coordinateSystem: 'bmap',
+			data : [],
+		//   itemStyle: {
+		//      emphasis: {
+		//          shadowBlur: 10,
+		//          shadowColor: 'rgba(0, 0, 0, 0.5)'
+		//      }
+		// }
+		} ]
+	};
+	var url = "sim/result/getSpaceNums";
+	$.ajax({
+		type : "POST",
+		url : url,
+		dataType : "json",
+		success : function(data) {
+			cuts = data.cuts;
+			var pieces = [];
+			for (i = 0; i <= cuts.length; i++) {
+				var ele;
+				if (i == 0) {
+					ele = {
+						min : 0,
+						max : cuts[i]
+					};
+				} else if (i == cuts.length) {
+					ele = {
+						min : cuts[i - 1]
+					};
+				} else {
+					ele = {
+						min : cuts[i - 1],
+						max : cuts[i]
+					};
+				}
+				pieces.push(ele);
+			}
+			option.visualMap.pieces = pieces;
+			var eles = data.elements;
+			var _setTimeout = setTimeout;
+			/*
+			window.setTimeout=function(callback,time,params){
+			   var param=Array.prototype.slice.call(arguments,2);
+			   var _callback=function(){
+			     callback.apply(null,param);
+			   }
+			   _setTimeout(_callback,time);
+			}*/
+			var i = 0;
+			var refreshData = function() {
 				nums = eles[i];
 				option.series[0].data = nums;
 				myChart.setOption(option);
 				i++;
-				if(i == eles.length){
+				if (i == eles.length) {
 					clearInterval(inter);
 				}
+			}
+			var inter = setInterval(refreshData,1000);
+			refreshData();
+			var bmap = myChart.getModel().getComponent('bmap').getBMap();
+	        bmap.addControl(new BMap.MapTypeControl()); 
+		},
+		error : function(msg) {
+			alert("error");
 		}
-		var inter = setInterval(refreshData,1000);
-
-	},
-	error : function(msg) {
-		alert("error");
-	}
-});
+	});
 </script>
 <%}; %> <%
 layout("/pages/template/_layout.html",{head:headContent,body:bodyContent}){

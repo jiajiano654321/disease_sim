@@ -1,6 +1,7 @@
 package com.supyuan.component.util;
 
 import com.jfinal.log.Log;
+import com.supyuan.modules.simulation.data.CoordinateCache;
 import com.supyuan.system.dict.DictCache;
 import com.supyuan.system.dict.SysDictDetail;
 import com.supyuan.system.user.UserCache;
@@ -26,6 +27,8 @@ public class JFlyFoxCache {
 		DictCache.init();
 		// 用户信息
 		UserCache.init();
+		
+		CoordinateCache.init();
 		log.info("####缓存初始化结束......");
 	}
 

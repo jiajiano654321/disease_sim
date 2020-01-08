@@ -40,15 +40,13 @@ public class DataImportFactory {
 			sheet = wb.getSheetAt(0);
 			for(int i = 1;i <= sheet.getLastRowNum(); i++) {
 				XSSFRow row = sheet.getRow(i);
-				double longitude = row.getCell(2).getNumericCellValue();
-				double latitude = row.getCell(3).getNumericCellValue();
 				int code = Integer.parseInt(row.getCell(1).getRawValue());
 				int popuNum = Integer.parseInt(row.getCell(4).getRawValue());
 				for(int j = 5;j <row.getLastCellNum();j++) {
 					SimDataVo vo = new SimDataVo();
 					vo.setId(code);
-					vo.setLongitude(longitude);
-					vo.setLatitude(latitude);
+					vo.setLongitude(CoordinateCache.getLongitude(code));
+					vo.setLatitude(CoordinateCache.getLatitude(code));
 					vo.setPopuNum(popuNum);
 					vo.setCount(Integer.parseInt(row.getCell(j).getRawValue()));
 					vo.setDate(sheet.getRow(0).getCell(j).getDateCellValue());

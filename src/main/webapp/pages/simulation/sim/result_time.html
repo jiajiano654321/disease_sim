@@ -1,79 +1,94 @@
 <% var headContent = { include("/pages/template/head.html"){} %>
 <script type="text/javascript"
-	src="static/component/echarts/echarts.min.js"></script>
-<% }; var bodyContent = { %>
-<div id="main" style="width: 100%; height: 800px;"></div>
+	src="static/component/echarts/dist/echarts.min.js"></script>
 <script type="text/javascript">
-var myChart = echarts.init(document.getElementById('main'));
-var option = {
-	xAxis : {
-		type : 'time',
-		boundaryGap : true,
-		interval : 3600 * 24 * 35 * 1000,
-		min : 1388332800000,
-		max : 1418486400000,
-		splitLine : {
-			show : false
-		},
-		axisLine : {
-			lineStyle : { // 轴上的线样式
-				color : '#ccc'
+	showMenu('page_data');
+</script>
+<% }; var bodyContent = { %>
+<div style="width: 100%; height: 300px;">
+	<table>
+		<tr>
+			<td>
+				<div style="display: none;">${vo.id}</div>n=${vo.n},det=${vo.det},gam=${vo.gem},初始参数a=${vo.a},b=${vo.b},fau=${vo.c},b1=${vo.b1},fau1=${vo.fau1}
+			</td>
+		</tr>
+	</table>
+</div>
+<div id="main" style="width: 100%; height: 800px;"></div>
+<div style="text-align:center;" id="resultDiv"></div>
+<script type="text/javascript">
+	var myChart = echarts.init(document.getElementById('main'));
+	var option = {
+		xAxis : {
+			type : 'time',
+			boundaryGap : true,
+			interval : 3600 * 24 * 35 * 1000,
+			min : 1388332800000,
+			max : 1418486400000,
+			splitLine : {
+				show : false
+			},
+			axisLine : {
+				lineStyle : { // 轴上的线样式
+					color : '#ccc'
+				}
+			},
+			axisLabel : {
+				color : "#333"
 			}
 		},
-		axisLabel : {
-			color : "#333"
-		}
-	},
-	yAxis : {
-		axisTick : {
-			show : false
-		},
-		axisLabel : {
-			show : true,
-			color : "#333",
-			interval : 'auto'
-		},
-		axisLine : {
-			lineStyle : { // 轴上的线样式
-				color : '#ccc'
+		yAxis : {
+			axisTick : {
+				show : false
+			},
+			axisLabel : {
+				show : true,
+				color : "#333",
+				interval : 'auto'
+			},
+			axisLine : {
+				lineStyle : { // 轴上的线样式
+					color : '#ccc'
+				}
+			},
+			splitLine : {
+				lineStyle : {
+					color : '#dedede'
+				}
 			}
 		},
-		splitLine : {
-			lineStyle : {
-				color : '#dedede'
-			}
-		}
-	} ,
-	series : [ {
-		type : 'line',
-		yAxisIndex : 0,
-		color : [ '#ED5358' ],
-		smooth : true,
-		symbol : "roundRect",
-		symbolSize : 8
-	}, {
-		type : 'scatter',
-		color : [ '#696969' ],
-		symbol : "emptyCircle"
-	} ]
-};
+		series : [ {
+			type : 'line',
+			yAxisIndex : 0,
+			color : [ '#ED5358' ],
+			smooth : true,
+			symbol : "roundRect",
+			symbolSize : 8
+		}, {
+			type : 'scatter',
+			color : [ '#696969' ],
+			symbol : "emptyCircle"
+		} ]
+	};
 
-var url = "sim/result/getNums";
-$.ajax({
-	type : "POST",
-	url : url,
-	dataType : "json",
-	success : function(data) {
-		obs = data[0];
-		nums = data[1];
-		option.series[0].data = nums;
-		option.series[1].data = obs;
-		myChart.setOption(option);
-	},
-	error : function(msg) {
-		alert("error");
-	}
-});
+	var url = "sim/result/getNums";
+	$.ajax({
+		type : "POST",
+		url : url,
+		dataType : "json",
+		success : function(data) {
+			obs = data.result[0];
+			nums = data.result[1];
+			pars = data.pars;
+			debugger;
+			option.series[0].data = nums;
+			option.series[1].data = obs;
+			myChart.setOption(option);
+		},
+		error : function(msg) {
+			alert("error");
+		}
+	});
 </script>
 <%}; %> <%
 layout("/pages/template/_layout.html",{head:headContent,body:bodyContent}){
