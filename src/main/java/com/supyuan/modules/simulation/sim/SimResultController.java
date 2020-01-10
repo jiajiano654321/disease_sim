@@ -72,8 +72,11 @@ public class SimResultController extends BaseProjectController {
 	public void space() {
 		render(PATH + "space.html");
 	}
-
-	public void getNums() {
+	/**
+	 * 时间序列算法，获取折线图数据
+	 * getNums => getTimeNums
+	 */
+	public void getTimeNums() {
 		String readData = HttpKit.readData(getRequest());
 		JSONObject jsonobject = JSONObject.fromObject(readData);
 		AlgTimeVO parse = (AlgTimeVO) JSONObject.toBean(jsonobject, AlgTimeVO.class);
@@ -149,7 +152,7 @@ public class SimResultController extends BaseProjectController {
 			e.printStackTrace();
 		} catch (REXPMismatchException e) {
 			e.printStackTrace();
-		} catch (REngineException e) {
+		} catch (@SuppressWarnings("hiding") REngineException e) {
 			e.printStackTrace();
 		} finally {
 			if (rc != null) {
@@ -158,21 +161,23 @@ public class SimResultController extends BaseProjectController {
 		}
 	}
 
-	public void getSpaceNums() {
+	
+	/**
+	 * 获取地图热力图真实数据
+	 * getNums=>getSpaceRealNums
+	 */
+	public void getSpaceRealNums() {
+
 		String readData = HttpKit.readData(getRequest());
 		JSONObject jsonobject = JSONObject.fromObject(readData);
 		AlgSpaceVO parse = (AlgSpaceVO) JSONObject.toBean(jsonobject, AlgSpaceVO.class);
 		String year = parse.getYear();
 		int collectionId = parse.getCollectionId();
 		Map<String, Object> resultMap = new HashMap<String, Object>();
-		List<Record> datas = Db.find(FIND_SIM_DATA_CODE, collectionId, year);
 		List<Record> dataDorders = Db.find(FIND_SIM_DATA_DATE, collectionId, year);
 		List<Record> codePop = Db.find(FIND_POPU_NUM, collectionId, year);
-		Record first = Db.findFirst(FIND_WEEK_COUNT,collectionId, year);
 		RList list = getNumList(dataDorders);
-		List<List<double[]>> geoList = null;
-//		List<List<double[]>> geoRealList = getGeoRealList(dataDorders);
-//		List<List<double[]>> geoList = getGeoSimList(dataDorders, list,first.getInt("count"));
+		List<List<double[]>> geoList = getGeoRealList(dataDorders);
 
 		int[] popus = new int[codePop.size()];
 		for (int i = 0; i < codePop.size(); i++) {
@@ -198,8 +203,67 @@ public class SimResultController extends BaseProjectController {
 			rc.assign("k", new REXPDouble(kArr));
 			rc.assign("fileName", fileName);
 			rc.eval("source(fileName)");
-//			REXP cuts = rc.eval("CUTS()");
-//			resultMap.put("cuts", cuts.asDoubles());
+			REXP cuts = rc.eval("CUTS()");
+			resultMap.put("cuts", cuts.asDoubles());
+		} catch (RserveException e) {
+			e.printStackTrace();
+		} catch (REngineException e) {
+			e.printStackTrace();
+		} catch (REXPMismatchException e) {
+			e.printStackTrace();
+		} finally {
+			if (rc != null) {
+				rc.close();
+			}
+		}
+		resultMap.put("elements", geoList);
+		renderJson(resultMap);
+	
+	}
+	
+	
+	/**
+	 * 时空策略算法，根据原始参数获取算法模拟的地图热力图绘制数据
+	 * getSpaceNums =>getSpaceSimNums
+	 */
+	public void getSpaceSimNums() {
+		String readData = HttpKit.readData(getRequest());
+		JSONObject jsonobject = JSONObject.fromObject(readData);
+		AlgSpaceVO parse = (AlgSpaceVO) JSONObject.toBean(jsonobject, AlgSpaceVO.class);
+		String year = parse.getYear();
+		int collectionId = parse.getCollectionId();
+		Map<String, Object> resultMap = new HashMap<String, Object>();
+		List<Record> datas = Db.find(FIND_SIM_DATA_CODE, collectionId, year);
+		List<Record> dataDorders = Db.find(FIND_SIM_DATA_DATE, collectionId, year);
+		List<Record> codePop = Db.find(FIND_POPU_NUM, collectionId, year);
+		Record first = Db.findFirst(FIND_WEEK_COUNT,collectionId, year);
+		RList list = getNumList(dataDorders);
+		List<List<double[]>> geoList = null;
+
+		int[] popus = new int[codePop.size()];
+		for (int i = 0; i < codePop.size(); i++) {
+			popus[i] = codePop.get(i).getInt("popu").intValue();
+		}
+		REXPInteger numRexp = new REXPInteger(popus);
+		RConnection rc = null;
+		try {
+			rc = new RConnection();
+			rc.eval("rm(list = ls(all = TRUE)) ");
+			String fileName = "D:\\rscript\\test2.r";
+			rc.assign("popu", numRexp);
+			rc.assign("num",REXP.createDataFrame(list));
+			rc.assign("m", new REXPInteger(parse.getN()));
+			rc.assign("det", new REXPDouble(parse.getDet()));
+			rc.assign("gam", new REXPDouble(parse.getGam()));
+			rc.assign("a",new REXPDouble(parse.getA()));
+			rc.assign("b", new REXPDouble(parse.getB()));
+			rc.assign("fau", new REXPDouble(parse.getFau()));
+			rc.assign("b1", new REXPDouble(parse.getB1()));
+			rc.assign("fau1", new REXPDouble(parse.getFau1()));
+			double[] kArr = {parse.getK1(),parse.getK2()};
+			rc.assign("k", new REXPDouble(kArr));
+			rc.assign("fileName", fileName);
+			rc.eval("source(fileName)");
 			rc.eval("pars <- c("+ parse.getM1() +"," + parse.getM2() + "," + parse.getM3() + "," +parse.getM4() + ")");
 			REXP eval = rc.eval("HFMD(pars)");
 			geoList = getGeoSimList(dataDorders, eval.asDoubles());
@@ -231,7 +295,6 @@ public class SimResultController extends BaseProjectController {
 				REXPInteger ins = (REXPInteger) list.get(j);
 				int[] ais = ins.asIntegers();
 				int k = ais[i];
-//				HeatElement he = new HeatElement(x,y,k);
 				int[] arr = { x, y, k };
 				hes.add(arr);
 				x++;
