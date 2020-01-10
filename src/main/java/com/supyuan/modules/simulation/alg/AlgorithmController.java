@@ -1,16 +1,18 @@
 package com.supyuan.modules.simulation.alg;
 
+import java.io.File;
 import java.util.List;
-import java.util.Map;
 
 import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
+import com.jfinal.upload.UploadFile;
 import com.supyuan.component.base.BaseProjectController;
 import com.supyuan.jfinal.component.annotation.ControllerBind;
 import com.supyuan.jfinal.component.db.SQLUtils;
 import com.supyuan.modules.simulation.data.AlgTimeVO;
 import com.supyuan.modules.simulation.data.SimDataCollection;
+import com.supyuan.modules.simulation.sim.SimResult;
 
 @ControllerBind(controllerKey = "/sim/alg")
 public class AlgorithmController extends BaseProjectController {
@@ -33,14 +35,6 @@ public class AlgorithmController extends BaseProjectController {
 			// 查询条件
 			sql.whereLike("name", model.getStr("name"));
 		}
-
-		// 排序
-//		String orderBy = getBaseForm().getOrderBy();
-//		if (StrUtils.isEmpty(orderBy)) {
-//			sql.append(" order by t.create_time desc");
-//		} else {
-//			sql.append(" order by t.").append(orderBy);
-//		}
 
 		Page<Algorithm> page = Algorithm.dao.paginate(getPaginator(), "select a.* ", //
 				sql.toString().toString());
@@ -69,7 +63,7 @@ public class AlgorithmController extends BaseProjectController {
 		render(PATH + "space.html");
 	}
 
-	public void save() {
+	public void forwardSim() {
 		Integer id = getParaToInt("id");
 		Integer n = getParaToInt("model.n");
 		double det = Double.parseDouble(getPara("model.det"));
@@ -82,5 +76,26 @@ public class AlgorithmController extends BaseProjectController {
 		AlgTimeVO algTimeVO = new AlgTimeVO(id, n, det, gam, a, b, fau, b1, fau1);
 		setAttr("vo", algTimeVO);
 		render(PATH + "time.html");
+	}
+	/**
+	 * 保存新的算法，表单提交，有文件上传，前台请设置multipart
+	 */
+	public void save() {
+		String msg = "保存成功";
+		Integer pid = getParaToInt();
+		UploadFile uploadFile = this.getFile();
+		File file = null;
+		if(uploadFile != null) {
+			file = uploadFile.getFile();
+		}
+		Algorithm model = getModel(Algorithm.class);
+		if(pid != 1) {
+			model.update();
+		}else {
+			model.set("creator", getSessionUser().getUserID());
+			model.save();
+		}
+		setSessionUser(getSessionUser());
+		renderMessage(msg);
 	}
 }
